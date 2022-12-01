@@ -1,16 +1,16 @@
-import React from 'react';
+import './App.css';
+
 import {
-    BrowserRouter,
-    Routes,
-    Route,
-    Link
-  } from "react-router-dom";
+  BrowserRouter,
+  Routes,
+  Route
+} from 'react-router-dom';
 import Header from './Header';
 import Landing from './Landing';
 
 import Day1 from './day1';
 
-const Main = () => {
+function Main (): JSX.Element {
   return (
     <BrowserRouter>
       <Header></Header>
