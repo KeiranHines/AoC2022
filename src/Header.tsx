@@ -1,10 +1,26 @@
+import { NavLink } from 'react-router-dom';
 
+const ACTIVE = 'active';
 function Header (): JSX.Element {
   return (
-        <div>
-            <a href="/day1">Day 1</a>
-            <a href="/day2">Day 2</a>
-        </div>
+    <div className="header">
+      <div className="padding"></div>
+      <NavLink
+        to="/day1"
+        className={({ isActive }) =>
+          isActive ? ACTIVE : undefined
+        }>
+                Day 1
+      </NavLink>
+      <NavLink
+        to="/day2"
+        className={({ isActive }) =>
+          isActive ? ACTIVE : undefined
+        }>
+                Day 2
+      </NavLink>
+      <div className="padding"></div>
+    </div>
   );
 }
 export default Header;

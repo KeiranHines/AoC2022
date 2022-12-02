@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import Part from '../components/part';
+import DayContainer from '../components/DayContainer';
 
 /**
  * Prepares the data for the challenge.
@@ -11,7 +11,7 @@ function prepare (input: string): undefined {
   return undefined;
 }
 
-function App (): JSX.Element {
+function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
@@ -25,20 +25,7 @@ function App (): JSX.Element {
     }
   }, [value]);
 
-  return (
-    <div className="App">
-      <div className={'input'}>
-      <textarea className='max'
-        placeholder='Enter input:'
-        value = {value}
-        onChange={e => { setValue(e.target.value); }}
-        >
-      </textarea>
-        </div>
-      {part1 !== undefined && <Part number={1} result={part1}></Part> }
-      {part2 !== undefined && <Part number={2} result={part2}></Part> }
-     </div>
-  );
+  return <DayContainer day='enter day number here' inputCallback={setValue} part1={part1} part2={part2}></DayContainer>;
 }
 
-export default App;
+export default Day;

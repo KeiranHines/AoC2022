@@ -1,16 +1,14 @@
 import { useMemo, useState } from 'react';
-import Part from '../components/part';
-
+import DayContainer from '../components/DayContainer';
 const C_CHAR = 67;
 
 /**
  * Prepares the data for the challenge.
- * // TODO define cleaning and return type.
  * @param input The input string from the textArea
  * @returns The cleaned data as required to complete the puzzle
  */
 function prepare (input: string): number[][] {
-  return input.split('\n').map((round) => round.split(' ').map((player) => {
+  return input.trim().split('\n').map((round) => round.split(' ').map((player) => {
     const code = player.charCodeAt(0);
     if (code <= C_CHAR) {
       return code - 64; // offset A to 1 etc.
@@ -33,9 +31,6 @@ function calculateScorePart1 (rounds: number[][]): number {
 }
 
 function calculateScorePart2 (rounds: number[][]): number {
-  // rock sci 1,3
-  // paper rock 2,1
-  // sci paper 3,2
   return rounds.map((round) => {
     const [opp, result] = round;
 
@@ -55,7 +50,7 @@ function calculateScorePart2 (rounds: number[][]): number {
   }).reduce((sum, a) => sum + a, 0);
 }
 
-function App (): JSX.Element {
+function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
@@ -68,20 +63,7 @@ function App (): JSX.Element {
     }
   }, [value]);
 
-  return (
-    <div className="App">
-      <div className={'input'}>
-      <textarea className='max'
-        placeholder='Enter input:'
-        value = {value}
-        onChange={e => { setValue(e.target.value); }}
-        >
-      </textarea>
-        </div>
-      {part1 !== undefined && <Part number={1} result={part1}></Part> }
-      {part2 !== undefined && <Part number={2} result={part2}></Part> }
-     </div>
-  );
+  return <DayContainer day='2' inputCallback={setValue} part1={part1} part2={part2}></DayContainer>;
 }
 
-export default App;
+export default Day;
