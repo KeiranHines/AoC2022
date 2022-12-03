@@ -19,6 +19,13 @@ function Header (): JSX.Element {
         }>
                 Day 2
       </NavLink>
+      <NavLink
+        to="/day3"
+        className={({ isActive }) =>
+          isActive ? ACTIVE : undefined
+        }>
+                Day 3
+      </NavLink>
       <div className="padding"></div>
     </div>
   );
