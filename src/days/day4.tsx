@@ -77,22 +77,26 @@ function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
+  const [time, setTime] = useState<number | undefined>(undefined);
+
   const [data1, setData1] = useState<ChartData<'bar'> | undefined>(undefined);
   const [data2, setData2] = useState<ChartData<'bar'> | undefined>(undefined);
   useMemo(() => {
     if (value !== undefined) {
+      const st = new Date();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cleanData = prepare(value);
       const partOverlaps = findAnyOverlaps(cleanData);
       const fullOverlaps = findCompleteOverlaps(partOverlaps);
       setPart1(fullOverlaps.length);
+      setPart2(partOverlaps.length);
+      setTime(new Date().getTime() - st.getTime());
       setData1(buildVisualisation(fullOverlaps));
       setData2(buildVisualisation(partOverlaps));
-      setPart2(partOverlaps.length);
     }
   }, [value]);
 
-  return <DayContainer day='4' inputCallback={setValue} part1={part1} part2={part2}>
+  return <DayContainer day='4' inputCallback={setValue} part1={part1} part2={part2} time={time}>
     {(data1 !== undefined) && <>
       <div className='subtitle'>Full Overlaps</div>
       <Bar id={'part1Visual'} className="chart" data={data1}></Bar>

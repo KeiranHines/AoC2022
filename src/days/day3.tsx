@@ -111,20 +111,24 @@ function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
+  const [time, setTime] = useState<number | undefined>(undefined);
+
   const [display, setDisplay] = useState<JSX.Element | undefined>(undefined);
   useMemo(() => {
     if (value !== undefined) {
+      const st = new Date();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cleanData = prepare(value);
       const duplicates = findDuplicates(cleanData);
       const groupKeys = findGroupKeys(cleanData, 3);
-      setDisplay(buildDisplay(cleanData, duplicates, groupKeys));
       setPart1(sumPriorities(duplicates));
       setPart2(sumPriorities(groupKeys));
+      setTime(new Date().getTime() - st.getTime());
+      setDisplay(buildDisplay(cleanData, duplicates, groupKeys));
     }
   }, [value]);
 
-  return <DayContainer day='3' inputCallback={setValue} part1={part1} part2={part2}>
+  return <DayContainer day='3' inputCallback={setValue} part1={part1} part2={part2} time={time}>
     {(display !== undefined) && display }
   </DayContainer>;
 }

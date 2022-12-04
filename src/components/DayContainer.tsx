@@ -6,9 +6,10 @@ interface Props {
   inputCallback: Function
   part1?: number
   part2?: number
+  time?: number
   children?: React.ReactNode
 }
-function DayContainer ({ day, inputCallback, part1, part2, children }: Props): JSX.Element {
+function DayContainer ({ day, inputCallback, part1, part2, time, children }: Props): JSX.Element {
   return (
     <div className="App">
       <h1>{`Day ${day} solver`}</h1>
@@ -19,6 +20,7 @@ function DayContainer ({ day, inputCallback, part1, part2, children }: Props): J
         >
         </textarea>
       </div>
+      {time !== undefined && <div className='subtitle'>{`Time taken: ${time}ms`}</div>}
       {part1 !== undefined && <Part number={1} result={part1}></Part> }
       {part2 !== undefined && <Part number={2} result={part2}></Part> }
       {children}
