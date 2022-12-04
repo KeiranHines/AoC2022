@@ -6,7 +6,7 @@ interface Props {
   inputCallback: Function
   part1?: number
   part2?: number
-  children?: | React.ReactNode
+  children?: React.ReactNode
 }
 function DayContainer ({ day, inputCallback, part1, part2, children }: Props): JSX.Element {
   return (
