@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import DayContainer from '../components/DayContainer';
 
 type mapGrid = string[][];
@@ -81,6 +81,75 @@ function crate9001Simulator (payload: Payload): mapGrid[] {
   return states;
 }
 
+/**
+ * Renders a states grid.
+ * TODO Add ids to the crates on init of the map in parsing so that it can be used as ids here.
+ * @param state The state to render
+ * @param highlight If the top row of the gird should be highlighted.
+ * @returns The states display grid.
+ */
+function buildStateGrid (state: mapGrid, highlight: boolean): JSX.Element {
+  const cols = state.map((col, i) => {
+    const crates = col.map((create, i) => {
+      const classes = highlight && i === col.length - 1 ? 'crate error' : 'crate';
+      return (<div key={create} className={classes}>{create}</div>);
+    });
+    return (<div key={i} className='col'>
+      {crates}
+    </div>);
+  });
+  return (<div className='state-container'>
+    <div className='state-grid'>
+      {cols}
+    </div>
+  </div>
+  );
+}
+
+interface AnimationProps {
+  title: string
+  states: mapGrid[]
+}
+
+function Animation ({ title, states }: AnimationProps): JSX.Element {
+  const [command, setCommand] = useState(0);
+  const [freq, setFreq] = useState(50);
+  const [playing, setPlaying] = useState(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timer | undefined>(undefined);
+  useEffect(() => {
+    if (playing && command < states.length - 1) {
+      const interval = setInterval(() => {
+        setCommand(command + 1);
+      }, freq);
+      setIntervalId(interval);
+      return () => {
+        clearInterval(interval);
+        setIntervalId(undefined);
+      };
+    }
+    if (intervalId !== undefined) {
+      clearInterval(intervalId);
+      setIntervalId(undefined);
+      setPlaying(false);
+    }
+    if (playing) {
+      setPlaying(false);
+    }
+    return () => {};
+  }, [playing, command]);
+  return (<div className='crate-animation'>
+    <div className='subtitle'>{title}</div>
+    <div className='timing'>
+      <label htmlFor='freq'>update interval (ms)</label>
+      <input id='freq' type="number" value={freq} onChange={(e) => setFreq(parseInt(e.target.value))}></input>
+      <button disabled={command === states.length - 1} onClick={() => setPlaying(playing => !playing)}>{!playing ? 'Play' : 'Pause'}</button>
+      <span>{`state: ${command}`}</span>
+    </div>
+    <input type="range" min={0} max={states.length - 1} value={command} className="slider" onChange={ e => setCommand(parseInt(e.target.value))}/>
+    {buildStateGrid(states[command], command === states.length - 1)}
+  </div>);
+}
+
 function getTopOfAllRows (state: mapGrid): string {
   return state.map((col) => col[col.length - 1]).join('');
 }
@@ -91,9 +160,9 @@ function Day (): JSX.Element {
   const [part2, setPart2] = useState<string | undefined>(undefined);
   const [time, setTime] = useState<number | undefined>(undefined);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [create9000, setCreate9000] = useState<mapGrid[] | undefined>(undefined);
+  const [crate9000, setCreate9000] = useState<mapGrid[] | undefined>(undefined);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [create9001, setCreate9001] = useState<mapGrid[] | undefined>(undefined);
+  const [crate9001, setCreate9001] = useState<mapGrid[] | undefined>(undefined);
   useMemo(() => {
     if (value !== undefined) {
       const st = new Date();
@@ -110,7 +179,10 @@ function Day (): JSX.Element {
     }
   }, [value]);
 
-  return <DayContainer day='enter day number here' inputCallback={setValue} part1={part1} part2={part2} time={time}></DayContainer>;
+  return <DayContainer day='5' inputCallback={setValue} part1={part1} part2={part2} time={time}>
+    {crate9000 !== undefined && <Animation title="Crate 9000" states={crate9000}></Animation>}
+    {crate9001 !== undefined && <Animation title="Crate 9001" states={crate9001}></Animation>}
+  </DayContainer>;
 }
 
 export default Day;
