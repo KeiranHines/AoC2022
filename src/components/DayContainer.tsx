@@ -4,8 +4,8 @@ import Part from './part';
 interface Props {
   day: string
   inputCallback: Function
-  part1?: number
-  part2?: number
+  part1?: number | string
+  part2?: number | string
   time?: number
   children?: React.ReactNode
 }

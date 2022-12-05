@@ -1,7 +1,7 @@
 
 interface Props {
   number: number
-  result: number
+  result: number | string
 }
 
 export default function Part ({ number, result }: Props): JSX.Element {
