@@ -1,8 +1,12 @@
 import { useMemo, useState, useEffect } from 'react';
 import DayContainer from '../components/DayContainer';
 
-type mapGrid = string[][];
-
+type mapGrid = create[][];
+interface create {
+  label: string
+  id: number
+  color?: string
+};
 interface Payload {
   map: mapGrid
   commands: string[]
@@ -18,8 +22,8 @@ function prepare (input: string): Payload {
   const [mapData, commands] = input.split('\n\n');
   const mapLines = mapData.split('\n');
   const cols = (mapLines[0].length / 4);
-  const map: string[][] = [];
-
+  const map: create[][] = [];
+  let id = 0;
   // Init columns arrays
   for (let i = 0; i < cols; i++) {
     map.push([]);
@@ -31,7 +35,11 @@ function prepare (input: string): Payload {
     let row = 0;
     for (; j <= line.length; j += 4) {
       if (line[j] === '[') {
-        map[row].push(line[j + 1]);
+        map[row].push({
+          label: line[j + 1],
+          id
+        });
+        id++;
       }
       row++;
     }
@@ -83,16 +91,15 @@ function crate9001Simulator (payload: Payload): mapGrid[] {
 
 /**
  * Renders a states grid.
- * TODO Add ids to the crates on init of the map in parsing so that it can be used as ids here.
  * @param state The state to render
  * @param highlight If the top row of the gird should be highlighted.
  * @returns The states display grid.
  */
 function buildStateGrid (state: mapGrid, highlight: boolean): JSX.Element {
   const cols = state.map((col, i) => {
-    const crates = col.map((create, i) => {
+    const crates = col.map((crate, i) => {
       const classes = highlight && i === col.length - 1 ? 'crate error' : 'crate';
-      return (<div key={create} className={classes}>{create}</div>);
+      return (<div key={crate.id} className={classes}>{crate.label}</div>);
     });
     return (<div key={i} className='col'>
       {crates}
@@ -151,7 +158,7 @@ function Animation ({ title, states }: AnimationProps): JSX.Element {
 }
 
 function getTopOfAllRows (state: mapGrid): string {
-  return state.map((col) => col[col.length - 1]).join('');
+  return state.map((col) => col[col.length - 1].label).join('');
 }
 
 function Day (): JSX.Element {
@@ -160,9 +167,7 @@ function Day (): JSX.Element {
   const [part2, setPart2] = useState<string | undefined>(undefined);
   const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [crate9000, setCreate9000] = useState<mapGrid[] | undefined>(undefined);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [crate9001, setCreate9001] = useState<mapGrid[] | undefined>(undefined);
   useMemo(() => {
     setWarning('');
