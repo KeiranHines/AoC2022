@@ -54,19 +54,32 @@ function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
+  const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
 
   useMemo(() => {
-    if (value !== undefined) {
-      const st = new Date();
-      const cleanData = prepare(value);
-      setPart1(calculateScorePart1(cleanData));
-      setPart2(calculateScorePart2(cleanData));
-      setTime(new Date().getTime() - st.getTime());
+    setWarning('');
+    setPart1(undefined);
+    setPart2(undefined);
+    setTime(undefined);
+    if (value !== undefined && value.length > 1) {
+      try {
+        const st = window.performance.now();
+        const cleanData = prepare(value);
+        setPart1(calculateScorePart1(cleanData));
+        setPart2(calculateScorePart2(cleanData));
+        setTime(window.performance.now() - st);
+      } catch (e) {
+        if (typeof e === 'string') {
+          setWarning(e.toUpperCase());
+        } else if (e instanceof Error) {
+          setWarning(e.message);
+        }
+      }
     }
   }, [value]);
 
-  return <DayContainer day='2' inputCallback={setValue} part1={part1} part2={part2} time={time}></DayContainer>;
+  return <DayContainer day='2' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}></DayContainer>;
 }
 
 export default Day;

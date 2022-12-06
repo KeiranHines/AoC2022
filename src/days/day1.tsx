@@ -20,19 +20,32 @@ function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
+  const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
 
   const [reduced, setReduced] = useState<number[] | undefined>(undefined);
   const [data, setData] = useState<ChartData<'bar'> | undefined>(undefined);
   useMemo(() => {
-    if (value !== undefined) {
-      const st = new Date();
-      const napsacks = prepare(value);
-      const r = reduce(napsacks);
-      setReduced(r);
-      setPart1(Math.max(...r));
-      setPart2(getTopN(r, 3).reduce((x, a) => x + a, 0));
-      setTime(new Date().getTime() - st.getTime());
+    setWarning('');
+    setPart1(undefined);
+    setPart2(undefined);
+    setTime(undefined);
+    if (value !== undefined && value.length > 1) {
+      try {
+        const st = window.performance.now();
+        const napsacks = prepare(value);
+        const r = reduce(napsacks);
+        setReduced(r);
+        setPart1(Math.max(...r));
+        setPart2(getTopN(r, 3).reduce((x, a) => x + a, 0));
+        setTime(window.performance.now() - st);
+      } catch (e) {
+        if (typeof e === 'string') {
+          setWarning(e.toUpperCase());
+        } else if (e instanceof Error) {
+          setWarning(e.message);
+        }
+      }
     }
   }, [value]);
 
@@ -57,7 +70,7 @@ function Day (): JSX.Element {
   }, [reduced]);
 
   return (
-    <DayContainer day='1' inputCallback={setValue} part1={part1} part2={part2} time={time}>
+    <DayContainer day='1' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}>
       {data !== undefined && <Bar id={'calories'} className="chart" data={data}></Bar> }
     </DayContainer>
   );

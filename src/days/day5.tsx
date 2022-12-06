@@ -158,28 +158,41 @@ function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<string | undefined>(undefined);
   const [part2, setPart2] = useState<string | undefined>(undefined);
+  const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [crate9000, setCreate9000] = useState<mapGrid[] | undefined>(undefined);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [crate9001, setCreate9001] = useState<mapGrid[] | undefined>(undefined);
   useMemo(() => {
-    if (value !== undefined) {
-      const st = new Date();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cleanData = prepare(value);
-      const crate9000 = crate9000Simulator(cleanData);
-      const crate9001 = crate9001Simulator(cleanData);
-      setCreate9000(crate9000);
-      setCreate9001(crate9001);
-      setPart1(getTopOfAllRows(crate9000[crate9000.length - 1]));
-      setPart2(getTopOfAllRows(crate9001[crate9001.length - 1]));
+    setWarning('');
+    setPart1(undefined);
+    setPart2(undefined);
+    setTime(undefined);
+    if (value !== undefined && value.length > 1) {
+      try {
+        const st = window.performance.now();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const cleanData = prepare(value);
+        const crate9000 = crate9000Simulator(cleanData);
+        const crate9001 = crate9001Simulator(cleanData);
+        setCreate9000(crate9000);
+        setCreate9001(crate9001);
+        setPart1(getTopOfAllRows(crate9000[crate9000.length - 1]));
+        setPart2(getTopOfAllRows(crate9001[crate9001.length - 1]));
 
-      setTime(new Date().getTime() - st.getTime());
+        setTime(window.performance.now() - st);
+      } catch (e) {
+        if (typeof e === 'string') {
+          setWarning(e.toUpperCase());
+        } else if (e instanceof Error) {
+          setWarning(e.message);
+        }
+      }
     }
   }, [value]);
 
-  return <DayContainer day='5' inputCallback={setValue} part1={part1} part2={part2} time={time}>
+  return <DayContainer day='5' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}>
     {crate9000 !== undefined && <Animation title="Crate 9000" states={crate9000}></Animation>}
     {crate9001 !== undefined && <Animation title="Crate 9001" states={crate9001}></Animation>}
   </DayContainer>;

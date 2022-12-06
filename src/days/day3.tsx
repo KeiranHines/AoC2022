@@ -111,24 +111,37 @@ function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
+  const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
 
   const [display, setDisplay] = useState<JSX.Element | undefined>(undefined);
   useMemo(() => {
-    if (value !== undefined) {
-      const st = new Date();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cleanData = prepare(value);
-      const duplicates = findDuplicates(cleanData);
-      const groupKeys = findGroupKeys(cleanData, 3);
-      setPart1(sumPriorities(duplicates));
-      setPart2(sumPriorities(groupKeys));
-      setTime(new Date().getTime() - st.getTime());
-      setDisplay(buildDisplay(cleanData, duplicates, groupKeys));
+    setWarning('');
+    setPart1(undefined);
+    setPart2(undefined);
+    setTime(undefined);
+    if (value !== undefined && value.length > 1) {
+      try {
+        const st = window.performance.now();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const cleanData = prepare(value);
+        const duplicates = findDuplicates(cleanData);
+        const groupKeys = findGroupKeys(cleanData, 3);
+        setPart1(sumPriorities(duplicates));
+        setPart2(sumPriorities(groupKeys));
+        setTime(window.performance.now() - st);
+        setDisplay(buildDisplay(cleanData, duplicates, groupKeys));
+      } catch (e) {
+        if (typeof e === 'string') {
+          setWarning(e.toUpperCase());
+        } else if (e instanceof Error) {
+          setWarning(e.message);
+        }
+      }
     }
   }, [value]);
 
-  return <DayContainer day='3' inputCallback={setValue} part1={part1} part2={part2} time={time}>
+  return <DayContainer day='3' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}>
     {(display !== undefined) && display }
   </DayContainer>;
 }
