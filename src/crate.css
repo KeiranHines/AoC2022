@@ -1,0 +1,71 @@
+.crate-animation {
+    text-align: center;
+    display: block;
+    width: 50%;
+    min-height: 75%;
+    height: 75%;
+    max-height: 75%;
+    margin-bottom: 20px;
+}
+.state-container {
+    display: grid;
+    min-height: 90%;
+    max-height: 90%;
+    overflow: scroll;
+}
+.state-grid {
+    display: flex;
+    justify-content: space-around;
+    height: 100%;
+    max-height: 100%;
+}
+.col {
+    width: 2em;
+    display:flex;
+    flex-direction: column-reverse;
+}
+.slider {
+    width: 100%;
+}
+.timing {
+    display: flex;
+    justify-content: space-around;
+}
+
+.crate {
+    border: 2px black solid;
+}
+
+.crate-blue {
+    background-color: blue;
+    color:white
+}
+.crate-yellow {
+    background-color: yellow;
+}
+
+.crate-green {
+    background-color: green;
+}
+.crate-purple {
+    background-color: purple;
+    color: white;
+}
+
+.crate-brown {
+    background-color: brown;
+    color: white;
+}
+
+.crate-grey {
+    background-color: grey;
+}
+
+.crate-aqua {
+    background-color: aqua;
+}
+
+.col .crate:last-of-type {
+    color: red;
+    font-weight: bold;
+}

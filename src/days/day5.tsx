@@ -1,16 +1,19 @@
 import { useMemo, useState, useEffect } from 'react';
 import DayContainer from '../components/DayContainer';
+import '../crate.css';
 
-type mapGrid = create[][];
-interface create {
+type mapGrid = crate[][];
+interface crate {
   label: string
   id: number
-  color?: string
+  color: string
 };
 interface Payload {
   map: mapGrid
   commands: string[]
 }
+
+const colors = ['blue', 'yellow', 'green', 'purple', 'brown', 'grey', 'aqua'];
 
 /**
  * Prepares the data for the challenge.
@@ -22,8 +25,9 @@ function prepare (input: string): Payload {
   const [mapData, commands] = input.split('\n\n');
   const mapLines = mapData.split('\n');
   const cols = (mapLines[0].length / 4);
-  const map: create[][] = [];
+  const map: crate[][] = [];
   let id = 0;
+  let colorIndex = 0;
   // Init columns arrays
   for (let i = 0; i < cols; i++) {
     map.push([]);
@@ -37,11 +41,16 @@ function prepare (input: string): Payload {
       if (line[j] === '[') {
         map[row].push({
           label: line[j + 1],
-          id
+          id,
+          color: colors[colorIndex]
         });
         id++;
       }
       row++;
+    }
+    colorIndex++;
+    if (colorIndex === colors.length) {
+      colorIndex = 0;
     }
   }
   return {
@@ -98,8 +107,7 @@ function crate9001Simulator (payload: Payload): mapGrid[] {
 function buildStateGrid (state: mapGrid, highlight: boolean): JSX.Element {
   const cols = state.map((col, i) => {
     const crates = col.map((crate, i) => {
-      const classes = highlight && i === col.length - 1 ? 'crate error' : 'crate';
-      return (<div key={crate.id} className={classes}>{crate.label}</div>);
+      return (<div key={crate.id} className={`crate crate-${crate.color}`}>{crate.label}</div>);
     });
     return (<div key={i} className='col'>
       {crates}
