@@ -27,6 +27,7 @@ function Header (): JSX.Element {
       <NavWrapper to="/day4">Day 4</NavWrapper>
       <NavWrapper to="/day5">Day 5</NavWrapper>
       <NavWrapper to="/day6">Day 6</NavWrapper>
+      <NavWrapper to="/day7">Day 7</NavWrapper>
       <div className="padding"></div>
     </div>
   );
