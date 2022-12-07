@@ -129,3 +129,7 @@ code {
   display: flex;
   justify-content: space-around;
 }
+
+span.dir {
+  color:blue;
+}

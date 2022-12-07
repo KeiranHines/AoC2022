@@ -13,6 +13,20 @@ interface File {
   name: string
   size: number
 };
+interface DirectoryProps {
+  current: Directory
+  path: string
+}
+
+interface Display {
+  name: string
+  size: number
+  isDir: boolean
+}
+
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
 
 /**
  * Prepares the data for the challenge.
@@ -136,12 +150,60 @@ function getDeletionCandidate (initial: Directory, fsSize: number, required: num
   return findSmallestGreaterThanN(initial, requiredToRemove);
 }
 
+/**
+ * Builds a unix style `ls -l` display for the directory tree
+ * @param param0
+ * @param param0.current The current directory
+ * @param param0.path The complete path of the current directory
+ * @returns The unix style `ls -l` tree
+ */
+function DirectoryTree ({ current, path }: DirectoryProps): JSX.Element {
+  const display: Display[] = [];
+  const date = new Date();
+  const month = monthNames[date.getMonth()];
+  display.push(...current.files.map(f => { return { name: f.name, size: f.size, isDir: false }; }));
+  display.push(...Object.values(current.directories).map(d => { return { name: d.name, size: d.size, isDir: true }; }));
+  display.sort((a, b) => a.name.localeCompare(b.name));
+
+  const directories = Object.values(current.directories).map((sub) => <DirectoryTree key={`${path}/${sub.name}`} current={sub} path={`${path}/${sub.name}`}/>);
+
+  const subs = display.map((sub) => {
+    const permissions = sub.isDir ? 'drwxrwxr--' : '-rwxrwxr--';
+    const className = sub.isDir ? 'dir' : 'file';
+    return (
+      <div key={`${current.name}/${sub.name}`}className={className}>
+        {`${permissions}\t?\troot\troot\t${sub.size}\t${month}\t${date.getDay()}\t${date.getHours()}:${date.getMinutes()}\t`}
+        <span className={className}>{sub.name}</span>
+      </div>);
+  });
+  return (
+    <div key={current.name} className='dir'>
+      <div>
+        <div>
+          {`${path.length > 0 ? path : '/'}:`}
+        </div>
+        <div>
+          {`total ${current.size}`}
+        </div>
+        {subs}
+        {directories}
+        <p></p>
+      </div>
+    </div>
+  );
+}
+
+function buildAnimation (initial: Directory): JSX.Element {
+  return <DirectoryTree current={initial} path={''}/>;
+}
+
 function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
   const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
+  const [tree, setTree] = useState<Directory | undefined>(undefined);
 
   useMemo(() => {
     setWarning('');
@@ -157,6 +219,7 @@ function Day (): JSX.Element {
         setPart1(smallerThan100k.map(d => d.size).reduce((sum, current) => sum + current, 0));
         setPart2(toDelete.size);
         setTime(window.performance.now() - st);
+        setTree(tree);
       } catch (e) {
         if (typeof e === 'string') {
           setWarning(e.toUpperCase());
@@ -167,7 +230,9 @@ function Day (): JSX.Element {
     }
   }, [value]);
 
-  return <DayContainer day='7' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}></DayContainer>;
+  return <DayContainer day='7' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}>
+    {tree !== undefined && buildAnimation(tree)}
+  </DayContainer>;
 }
 
 export default Day;
