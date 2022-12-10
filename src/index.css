@@ -175,3 +175,7 @@ span.dir {
   display: flex;
   justify-content: space-around;
 }
+
+.border-outline {
+  border: 1px solid black;
+}
