@@ -20,8 +20,10 @@ interface Knot extends Point {
 }
 
 interface MapState {
-  visited: Point[]
-  rope: Knot
+  visited: Set<String>
+  visitedIndex: number
+  headString: string
+  tailStrings: string[]
 }
 
 interface MapParams {
@@ -50,17 +52,20 @@ function runSimulation (input: Vector[], ropeHead: Knot, steps?: MapState[]): Po
   const visited = new Set<String>();
   let currentKnot = ropeHead;
   visited.add(`${ropeHead.x},${ropeHead.y}`);
+  let tailStrings: string[] = [];
   if (steps !== undefined) {
+    let temp = ropeHead;
+    while (temp.nextKnot !== undefined) {
+      tailStrings.push(`${temp.nextKnot.x},${temp.nextKnot.y}`);
+      temp = temp.nextKnot;
+    }
     steps.push({
-      visited: [...Array.from(visited).map((s) => {
-        const [x, y] = s.split(',');
-        return {
-          x: parseInt(x),
-          y: parseInt(y)
-        };
-      })],
-      rope: JSON.parse(JSON.stringify(ropeHead))
+      visited,
+      visitedIndex: visited.size,
+      headString: `${ropeHead.x},${ropeHead.y}`,
+      tailStrings
     });
+    tailStrings = [];
   }
   const change: Point = { x: 0, y: 0 };
   const delta: Point = { x: 0, y: 0 };
@@ -127,16 +132,18 @@ function runSimulation (input: Vector[], ropeHead: Knot, steps?: MapState[]): Po
       }
       if (tail !== undefined) { visited.add(`${tail.x},${tail.y}`); }
       if (steps !== undefined) {
+        let temp = ropeHead;
+        while (temp.nextKnot !== undefined) {
+          tailStrings.push(`${temp.nextKnot.x},${temp.nextKnot.y}`);
+          temp = temp.nextKnot;
+        }
         steps.push({
-          visited: [...Array.from(visited).map((s) => {
-            const [x, y] = s.split(',');
-            return {
-              x: parseInt(x),
-              y: parseInt(y)
-            };
-          })],
-          rope: JSON.parse(JSON.stringify(ropeHead))
+          visited,
+          visitedIndex: visited.size,
+          headString: `${ropeHead.x},${ropeHead.y}`,
+          tailStrings
         });
+        tailStrings = [];
       }
     }
   });
@@ -168,44 +175,30 @@ function buildRope (length: number, start: Point): Knot {
  * Renders a states grid.
  * @returns The states display grid.
  */
-function buildStateGrid (state: MapState, maxX: number, maxY: number, start: Point): JSX.Element {
-  const max = Math.max(maxX, maxY);
-  console.log(max);
-  let size;
-  if (max > 50) {
-    size = 'tiny';
-  } else if (max > 25) {
-    size = 'xxsmall';
-  } else if (max > 12) {
-    size = 'xsmall';
-  } else {
-    size = 'small';
-  }
-  const asString = state.visited.map(p => `${p.x},${p.y}`);
-  const startString = `${start.x},${start.y}`;
-  const headString = `${state.rope.x},${state.rope.y}`;
-  const tailStrings: string[] = [];
-  let temp = state.rope;
+function buildStateGrid (state: MapState, maxX: number, maxY: number, start: string, size: string): JSX.Element {
+  const asString = Array.from(state.visited).slice(0, state.visitedIndex);
+  const headString = state.headString;
+  const tailStrings = state.tailStrings;
   const lines: JSX.Element[] = [];
-  while (temp.nextKnot !== undefined) {
-    tailStrings.push(`${temp.nextKnot.x},${temp.nextKnot.y}`);
-    temp = temp.nextKnot;
-  }
   for (let i = maxY - 1; i >= 0; i--) {
     const line: JSX.Element[] = [];
     for (let j = 0; j < maxX; j++) {
       const s = `${j},${i}`;
       let char = '.';
+
       if (s === headString) {
         char = 'H';
-      } else if (tailStrings.includes(s)) {
-        char = tailStrings.length === 1 ? 'T' : `${tailStrings.indexOf(s) + 1}`;
-      } else if (s === startString) {
-        char = 'S';
-      } else if (asString.includes(s)) {
-        char = '#';
       } else {
-        char = '.';
+        const tsIndex = tailStrings.indexOf(s);
+        if (tsIndex !== -1) {
+          char = tailStrings.length === 1 ? 'T' : `${tsIndex + 1}`;
+        } else if (s === start) {
+          char = 'S';
+        } else if (asString.includes(s)) {
+          char = '#';
+        } else {
+          char = '.';
+        }
       }
       line.push(<div key={s} className={`square ${size}`}>{char}</div>);
     }
@@ -253,6 +246,24 @@ function Animation ({ title, states, maxX, maxY, start }: AnimationProps): JSX.E
     }
     return () => {};
   }, [playing, command]);
+
+  const startString = `${start.x},${start.y}`;
+  const max = Math.max(maxX, maxY);
+  let size: string;
+  if (max > 200) {
+    size = 'xxtiny';
+  } else if (max > 100) {
+    size = 'xtiny';
+  } else if (max > 50) {
+    size = 'tiny';
+  } else if (max > 25) {
+    size = 'xxsmall';
+  } else if (max > 12) {
+    size = 'xsmall';
+  } else {
+    size = 'small';
+  }
+
   return (<div className='animation'>
     <div className='subtitle'>{title}</div>
     <div className='timing'>
@@ -262,7 +273,7 @@ function Animation ({ title, states, maxX, maxY, start }: AnimationProps): JSX.E
       <span>{`state: ${command}`}</span>
     </div>
     <input type="range" min={0} max={states.length - 1} value={command} className="slider" onChange={ e => setCommand(parseInt(e.target.value))}/>
-    {buildStateGrid(states[command], maxX, maxY, start)}
+    {buildStateGrid(states[command], maxX, maxY, startString, size)}
   </div>);
 }
 
@@ -317,6 +328,8 @@ function Day (): JSX.Element {
     setPart1(undefined);
     setPart2(undefined);
     setTime(undefined);
+    setAnimation1(undefined);
+    setAnimation1(undefined);
     if (value !== undefined && value.length > 1) {
       try {
         const st = window.performance.now();
