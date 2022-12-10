@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import DayContainer from '../components/DayContainer';
-import '../crate.css';
+import '../crate.module.css';
 
 type mapGrid = crate[][];
 interface crate {
@@ -152,7 +152,7 @@ function Animation ({ title, states }: AnimationProps): JSX.Element {
     }
     return () => {};
   }, [playing, command]);
-  return (<div className='crate-animation'>
+  return (<div className='.animation'>
     <div className='subtitle'>{title}</div>
     <div className='timing'>
       <label htmlFor='freq'>update interval (ms)</label>

@@ -105,10 +105,19 @@ span.dir {
   width: 10px;
   font-size: x-small;
 }
+.square.xxsmall {
+  height: 20px;
+  width: 20px;
+}
+.square.xsmall {
+  height: 30px;
+  width: 30px;
+}
 .square.small {
   height: 50px;
   width: 50px;
 }
+
 .line {
   display: flex;
 }
@@ -128,4 +137,32 @@ span.dir {
   
 .tooltip:hover .content {
   visibility: visible;
+}
+
+.animation {
+  text-align: center;
+  display: block;
+  width: 50%;
+  min-height: 75%;
+  height: 75%;
+  max-height: 75%;
+  margin-bottom: 20px;
+}
+.state-container {
+  display: grid;
+  min-height: 90%;
+  max-height: 90%;
+  overflow: scroll;
+}
+.state-grid {
+  height: 100%;
+  max-height: 100%;
+}
+
+.slider {
+  width: 100%;
+}
+.timing {
+  display: flex;
+  justify-content: space-around;
 }

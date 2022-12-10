@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import DayContainer from '../components/DayContainer';
 
 enum Direction {
@@ -19,6 +19,16 @@ interface Knot extends Point {
   nextKnot?: Knot
 }
 
+interface MapState {
+  visited: Point[]
+  rope: Knot
+}
+
+interface MapParams {
+  x: number
+  y: number
+  start: Point
+}
 /**
  * Prepares the data for the challenge.
  * Transforms the input to a list of vectors to be executed
@@ -36,10 +46,22 @@ function prepare (input: string): Vector[] {
   });
 }
 
-function runSimulation (input: Vector[], ropeHead: Knot): Point[] {
+function runSimulation (input: Vector[], ropeHead: Knot, steps?: MapState[]): Point[] {
   const visited = new Set<String>();
   let currentKnot = ropeHead;
   visited.add(`${ropeHead.x},${ropeHead.y}`);
+  if (steps !== undefined) {
+    steps.push({
+      visited: [...Array.from(visited).map((s) => {
+        const [x, y] = s.split(',');
+        return {
+          x: parseInt(x),
+          y: parseInt(y)
+        };
+      })],
+      rope: JSON.parse(JSON.stringify(ropeHead))
+    });
+  }
   const change: Point = { x: 0, y: 0 };
   const delta: Point = { x: 0, y: 0 };
   input.forEach((vector) => {
@@ -104,6 +126,18 @@ function runSimulation (input: Vector[], ropeHead: Knot): Point[] {
         currentKnot = tail;
       }
       if (tail !== undefined) { visited.add(`${tail.x},${tail.y}`); }
+      if (steps !== undefined) {
+        steps.push({
+          visited: [...Array.from(visited).map((s) => {
+            const [x, y] = s.split(',');
+            return {
+              x: parseInt(x),
+              y: parseInt(y)
+            };
+          })],
+          rope: JSON.parse(JSON.stringify(ropeHead))
+        });
+      }
     }
   });
   return Array.from(visited).map((s) => {
@@ -112,28 +146,171 @@ function runSimulation (input: Vector[], ropeHead: Knot): Point[] {
       x: parseInt(x),
       y: parseInt(y)
     };
-  }); ;
+  });
 }
-function buildRope (length: number): Knot {
+
+function buildRope (length: number, start: Point): Knot {
   const head = {
-    x: 0, y: 0
+    x: start.x, y: start.y
   };
   let tail: Knot = head;
   for (let i = 1; i < length; i++) {
     const newKnot = {
-      x: 0, y: 0
+      x: start.x, y: start.y
     };
     tail.nextKnot = newKnot;
     tail = newKnot;
   }
   return head;
 }
+
+/**
+ * Renders a states grid.
+ * @returns The states display grid.
+ */
+function buildStateGrid (state: MapState, maxX: number, maxY: number, start: Point): JSX.Element {
+  const max = Math.max(maxX, maxY);
+  console.log(max);
+  let size;
+  if (max > 50) {
+    size = 'tiny';
+  } else if (max > 25) {
+    size = 'xxsmall';
+  } else if (max > 12) {
+    size = 'xsmall';
+  } else {
+    size = 'small';
+  }
+  const asString = state.visited.map(p => `${p.x},${p.y}`);
+  const startString = `${start.x},${start.y}`;
+  const headString = `${state.rope.x},${state.rope.y}`;
+  const tailStrings: string[] = [];
+  let temp = state.rope;
+  const lines: JSX.Element[] = [];
+  while (temp.nextKnot !== undefined) {
+    tailStrings.push(`${temp.nextKnot.x},${temp.nextKnot.y}`);
+    temp = temp.nextKnot;
+  }
+  for (let i = maxY - 1; i >= 0; i--) {
+    const line: JSX.Element[] = [];
+    for (let j = 0; j < maxX; j++) {
+      const s = `${j},${i}`;
+      let char = '.';
+      if (s === headString) {
+        char = 'H';
+      } else if (tailStrings.includes(s)) {
+        char = tailStrings.length === 1 ? 'T' : `${tailStrings.indexOf(s) + 1}`;
+      } else if (s === startString) {
+        char = 'S';
+      } else if (asString.includes(s)) {
+        char = '#';
+      } else {
+        char = '.';
+      }
+      line.push(<div key={s} className={`square ${size}`}>{char}</div>);
+    }
+    lines.push(<div className='line' key={i}>{line}</div>);
+  }
+  return (<div className='state-container'>
+    <div className='state-grid'>
+      {lines}
+    </div>
+  </div>
+  );
+}
+
+interface AnimationProps {
+  title: string
+  states: MapState[]
+  maxX: number
+  maxY: number
+  start: Point
+}
+
+function Animation ({ title, states, maxX, maxY, start }: AnimationProps): JSX.Element {
+  const [command, setCommand] = useState(0);
+  const [freq, setFreq] = useState(50);
+  const [playing, setPlaying] = useState(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timer | undefined>(undefined);
+  useEffect(() => {
+    if (playing && command < states.length - 1) {
+      const interval = setInterval(() => {
+        setCommand(command + 1);
+      }, freq);
+      setIntervalId(interval);
+      return () => {
+        clearInterval(interval);
+        setIntervalId(undefined);
+      };
+    }
+    if (intervalId !== undefined) {
+      clearInterval(intervalId);
+      setIntervalId(undefined);
+      setPlaying(false);
+    }
+    if (playing) {
+      setPlaying(false);
+    }
+    return () => {};
+  }, [playing, command]);
+  return (<div className='animation'>
+    <div className='subtitle'>{title}</div>
+    <div className='timing'>
+      <label htmlFor='freq'>update interval (ms)</label>
+      <input id='freq' type="number" value={freq} onChange={(e) => setFreq(parseInt(e.target.value))}></input>
+      <button disabled={command === states.length - 1} onClick={() => setPlaying(playing => !playing)}>{!playing ? 'Play' : 'Pause'}</button>
+      <span>{`state: ${command}`}</span>
+    </div>
+    <input type="range" min={0} max={states.length - 1} value={command} className="slider" onChange={ e => setCommand(parseInt(e.target.value))}/>
+    {buildStateGrid(states[command], maxX, maxY, start)}
+  </div>);
+}
+
+function getMaxXandY (input: Vector[]): MapParams {
+  let x = 0;
+  let y = 0;
+  let minX = 0;
+  let minY = 0;
+  let maxX = 0;
+  let maxY = 0;
+  input.forEach((v) => {
+    switch (v.direction) {
+      case Direction.Up:
+        y += v.distance;
+        break;
+      case Direction.Down:
+        y -= v.distance;
+        break;
+      case Direction.Left:
+        x -= v.distance;
+        break;
+      case Direction.Right:
+        x += v.distance;
+        break;
+    }
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+  });
+  return {
+    x: -minX + maxX + 1,
+    y: -minY + maxY + 1,
+    start: {
+      x: -minX,
+      y: -minY
+    }
+  };
+}
+
 function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
   const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
+  const [animation1, setAnimation1] = useState<AnimationProps | undefined>(undefined);
+  const [animation2, setAnimation2] = useState<AnimationProps | undefined>(undefined);
 
   useMemo(() => {
     setWarning('');
@@ -145,9 +322,14 @@ function Day (): JSX.Element {
         const st = window.performance.now();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const cleanData = prepare(value);
-        setPart1(runSimulation(cleanData, buildRope(2)).length);
-        setPart2(runSimulation(cleanData, buildRope(10)).length);
+        const { x, y, start } = getMaxXandY(cleanData);
+        const shortRopeStates: MapState[] = [];
+        const longRopeStates: MapState[] = [];
+        setPart1(runSimulation(cleanData, buildRope(2, start), shortRopeStates).length);
+        setPart2(runSimulation(cleanData, buildRope(10, start), longRopeStates).length);
         setTime(window.performance.now() - st);
+        setAnimation1({ title: 'rope 1', states: shortRopeStates, maxX: x, maxY: y, start });
+        setAnimation2({ title: 'rope 2', states: longRopeStates, maxX: x, maxY: y, start });
       } catch (e) {
         if (typeof e === 'string') {
           setWarning(e.toUpperCase());
@@ -158,7 +340,10 @@ function Day (): JSX.Element {
     }
   }, [value]);
 
-  return <DayContainer day='9' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}></DayContainer>;
+  return <DayContainer day='9' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}>
+    {animation1 !== undefined && <Animation title={animation1.title} states={animation1.states} maxX={animation1.maxX} maxY={animation1.maxY} start={animation1.start}></Animation>}
+    {animation2 !== undefined && <Animation title={animation2.title} states={animation2.states} maxX={animation2.maxX} maxY={animation2.maxY} start={animation2.start}></Animation>}
+  </DayContainer>;
 }
 
 export default Day;

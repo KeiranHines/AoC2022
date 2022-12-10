@@ -110,7 +110,7 @@ function buildHeightMap (trees: Tree[][], scenicMax: number): JSX.Element {
       const scenicOpacity = scenic / scenicMax;
       const scenicColor = 255 * scenicOpacity;
       scenicComp.push((
-        <div className={`square ${size} tooltip`} style={{
+        <div key={`${i},${j}`}className={`square ${size} tooltip`} style={{
           backgroundColor: `rgba(${scenicColor},${Math.max(green, scenicColor)},${scenicColor},1)`,
           border: `1px solid rgba(255, 0, 0, ${scenicOpacity})`
         }}>
@@ -118,7 +118,7 @@ function buildHeightMap (trees: Tree[][], scenicMax: number): JSX.Element {
           <span className='content'>{`scenic: ${scenic}`}</span>
         </div>));
     }
-    scenicLines.push(<div className='line'>
+    scenicLines.push(<div key={i} className='line'>
       {scenicComp}
     </div>);
   }
