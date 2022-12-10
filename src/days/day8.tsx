@@ -11,6 +11,7 @@ interface Tree {
   sceneEast: number
   blockedWest: boolean
   sceneWest: number
+  scenic: number
 };
 
 /**
@@ -37,7 +38,8 @@ function prepare (input: string): Tree[][] {
         sceneNorth: 0,
         sceneSouth: 0,
         sceneEast: 0,
-        sceneWest: 0
+        sceneWest: 0,
+        scenic: 0
       };
       // Check trees blocked or blocking north/south
       for (let vertCheck = i - 1; vertCheck >= 0; vertCheck--) {
@@ -83,15 +85,58 @@ function prepare (input: string): Tree[][] {
 function getVisibleTrees (trees: Tree[][]): Tree[] {
   return trees.flatMap((row) => row.filter((tree) => !(tree.blockedNorth && tree.blockedSouth && tree.blockedEast && tree.blockedWest)));
 }
-function getHighestScenicScores (trees: Tree[][]): number {
-  return Math.max(...trees.flatMap((row) => row.map((t) => t.sceneNorth * t.sceneSouth * t.sceneEast * t.sceneWest)));
+function calculateScenics (trees: Tree[][]): number {
+  let max = 0;
+  trees.map((row) => row.forEach((t) => {
+    t.scenic = t.sceneNorth * t.sceneSouth * t.sceneEast * t.sceneWest;
+    if (t.scenic > max) {
+      max = t.scenic;
+    }
+  }));
+  return max;
 }
+
+function buildHeightMap (trees: Tree[][], scenicMax: number): JSX.Element {
+  const size = trees.length > 20 ? 'tiny' : 'small';
+  const scenicLines: JSX.Element[] = [];
+  for (let i = 0; i < trees.length; i++) {
+    const line = trees[i];
+    const scenicComp: JSX.Element[] = [];
+    for (let j = 0; j < line.length; j++) {
+      const height = line[j].height;
+      const scenic = line[j].scenic;
+      const heatmapOpacity = (height + 1) / 10;
+      const green = 255 * heatmapOpacity;
+      const scenicOpacity = scenic / scenicMax;
+      const scenicColor = 255 * scenicOpacity;
+      scenicComp.push((
+        <div className={`square ${size} tooltip`} style={{
+          backgroundColor: `rgba(${scenicColor},${Math.max(green, scenicColor)},${scenicColor},1)`,
+          border: `1px solid rgba(255, 0, 0, ${scenicOpacity})`
+        }}>
+          {height}
+          <span className='content'>{`scenic: ${scenic}`}</span>
+        </div>));
+    }
+    scenicLines.push(<div className='line'>
+      {scenicComp}
+    </div>);
+  }
+  return (<>
+    <div className='scenicMap'>
+      {scenicLines}
+    </div>
+  </>
+  );
+}
+
 function Day (): JSX.Element {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [part1, setPart1] = useState<number | undefined>(undefined);
   const [part2, setPart2] = useState<number | undefined>(undefined);
   const [warning, setWarning] = useState<string>('');
   const [time, setTime] = useState<number | undefined>(undefined);
+  const [heightMap, setHeightMap] = useState<JSX.Element | undefined>(undefined);
 
   useMemo(() => {
     setWarning('');
@@ -102,9 +147,11 @@ function Day (): JSX.Element {
       try {
         const st = window.performance.now();
         const trees = prepare(value);
+        const scenic = calculateScenics(trees);
         setPart1(getVisibleTrees(trees).length);
-        setPart2(getHighestScenicScores(trees));
+        setPart2(scenic);
         setTime(window.performance.now() - st);
+        setHeightMap(buildHeightMap(trees, scenic));
       } catch (e) {
         if (typeof e === 'string') {
           setWarning(e.toUpperCase());
@@ -115,7 +162,9 @@ function Day (): JSX.Element {
     }
   }, [value]);
 
-  return <DayContainer day='8' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}></DayContainer>;
+  return <DayContainer day='8' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}>
+    {heightMap !== undefined && heightMap}
+  </DayContainer>;
 }
 
 export default Day;

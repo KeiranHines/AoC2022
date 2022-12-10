@@ -158,7 +158,7 @@ function Day (): JSX.Element {
     }
   }, [value]);
 
-  return <DayContainer day='enter day number here' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}></DayContainer>;
+  return <DayContainer day='9' inputCallback={setValue} part1={part1} part2={part2} time={time} warning={warning}></DayContainer>;
 }
 
 export default Day;

@@ -99,3 +99,33 @@ code {
 span.dir {
   color:blue;
 }
+
+.square.tiny {
+  height: 10px;
+  width: 10px;
+  font-size: x-small;
+}
+.square.small {
+  height: 50px;
+  width: 50px;
+}
+.line {
+  display: flex;
+}
+
+.tooltip .content {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+    /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+  
+.tooltip:hover .content {
+  visibility: visible;
+}
