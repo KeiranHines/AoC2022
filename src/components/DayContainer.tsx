@@ -22,8 +22,14 @@ function DayContainer ({ day, inputCallback, part1, part2, time, warning, childr
         </textarea>
       </div>
       {time !== undefined && <div className='subtitle'>{`Time taken: ${time.toFixed(3)}ms`}</div>}
-      {part1 !== undefined && <Part number={1} result={part1}></Part> }
-      {part2 !== undefined && <Part number={2} result={part2}></Part> }
+      <div className='result'>
+        <div className='grid-title'>
+          <div>Part</div>
+          <div>Result</div>
+        </div>
+        {part1 !== undefined && <Part number={1} result={part1}></Part> }
+        {part2 !== undefined && <Part number={2} result={part2}></Part> }
+      </div>
       {warning.length > 0 && <div className='error'>{`Failed to process input ${warning}`}</div>}
       {children}
     </div>

@@ -133,7 +133,6 @@ function Day (): JSX.Element {
         runRounds(monkeys2, 10000, (worry) => worry % lcm);
         const mostActive1 = getMostActive(2, monkeys1);
         const mostActive2 = getMostActive(2, monkeys2);
-        console.log(Array.from(monkeys2.values()).map(m => m.inspected));
         setPart1(mostActive1.reduce((a, b) => a * b.inspected, 1));
         setPart2(mostActive2.reduce((a, b) => a * b.inspected, 1));
         setTime(window.performance.now() - st);

@@ -5,8 +5,9 @@ interface Props {
 }
 
 export default function Part ({ number, result }: Props): JSX.Element {
-  return (<div className='result'>
-    <div className={'title'}>{`Part ${number}:`}</div>
+  return (<>
+    <div className={'title'}>{number}</div>
     <code>{result}</code>
-  </div>);
+  </>
+  );
 }
