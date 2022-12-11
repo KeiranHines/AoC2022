@@ -16,6 +16,7 @@ import Day7 from './days/day7';
 import Day8 from './days/day8';
 import Day9 from './days/day9';
 import Day10 from './days/day10';
+import Day11 from './days/day11';
 
 function Main (): JSX.Element {
   return (
@@ -33,6 +34,7 @@ function Main (): JSX.Element {
         <Route path="/day8" element={<Day8 />} />
         <Route path="/day9" element={<Day9 />} />
         <Route path="/day10" element={<Day10 />} />
+        <Route path="/day11" element={<Day11 />} />
       </Routes>
     </BrowserRouter>
   );

@@ -31,6 +31,7 @@ function Header (): JSX.Element {
       <NavWrapper to="/day8">Day 8</NavWrapper>
       <NavWrapper to="/day9">Day 9</NavWrapper>
       <NavWrapper to="/day10">Day 10</NavWrapper>
+      <NavWrapper to="/day11">Day 11</NavWrapper>
       <div className="padding"></div>
     </div>
   );
